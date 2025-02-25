@@ -11,7 +11,7 @@
  Target Server Version : 80039
  File Encoding         : 65001
 
- Date: 24/02/2025 15:32:02
+ Date: 25/02/2025 16:08:03
 */
 
 SET NAMES utf8mb4;
@@ -26,16 +26,19 @@ CREATE TABLE `sys_course_questionnaire`  (
   `course_id` bigint NOT NULL COMMENT '课程ID',
   `questionnaire_id` bigint NOT NULL COMMENT '问卷ID',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '关联时间',
+  `status` int NULL DEFAULT 0 COMMENT '问卷状态：0-待发布，1-进行中，2-已完成',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `unique_course_questionnaire`(`course_id` ASC, `questionnaire_id` ASC) USING BTREE,
   INDEX `questionnaire_id`(`questionnaire_id` ASC) USING BTREE,
   CONSTRAINT `sys_course_questionnaire_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `sys_courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `sys_course_questionnaire_ibfk_2` FOREIGN KEY (`questionnaire_id`) REFERENCES `sys_questionnaires` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_course_questionnaire
 -- ----------------------------
+INSERT INTO `sys_course_questionnaire` VALUES (7, 2, 1, '2025-02-25 14:59:53', 0);
+INSERT INTO `sys_course_questionnaire` VALUES (8, 2, 2, '2025-02-25 14:59:53', 0);
 
 -- ----------------------------
 -- Table structure for sys_course_students
@@ -51,11 +54,12 @@ CREATE TABLE `sys_course_students`  (
   INDEX `student_id`(`student_id` ASC) USING BTREE,
   CONSTRAINT `sys_course_students_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `sys_courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `sys_course_students_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_course_students
 -- ----------------------------
+INSERT INTO `sys_course_students` VALUES (3, 2, 2, '2025-02-25 15:31:04');
 
 -- ----------------------------
 -- Table structure for sys_courses
@@ -117,12 +121,13 @@ CREATE TABLE `sys_questionnaires`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `created_by`(`created_by` ASC) USING BTREE,
   CONSTRAINT `sys_questionnaires_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_questionnaires
 -- ----------------------------
-INSERT INTO `sys_questionnaires` VALUES (1, '测试问卷', '测试问卷', 21, '[{\"id\": 1740380297976, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"radio\", \"index\": 1, \"title\": \"测试\", \"options\": [\"1\", \"2\"], \"required\": true, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}]', '2025-02-24 11:53:00', '2025-02-24 11:53:00');
+INSERT INTO `sys_questionnaires` VALUES (1, '测试问卷', '测试问卷', 21, '[{\"id\": 1740451938362, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"single\", \"index\": 1, \"title\": \"测试\", \"options\": [\"12\", \"123\"], \"required\": true, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740452251865, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"radio\", \"index\": 2, \"label\": \"\", \"title\": \"测试萨达\", \"options\": [\"4567\", \"45647\", \"4564\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740452674400, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"multiple\", \"index\": 3, \"label\": \"\", \"title\": \"测试阿萨德\", \"options\": [\"123\", \"12\", \"445\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740452696578, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"checkbox\", \"index\": 4, \"label\": \"\", \"title\": \"测试多选框\", \"options\": [\"1\", \"2\", \"6\", \"4\"], \"required\": true, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740453079670, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"checkbox\", \"index\": 5, \"label\": \"\", \"title\": \"测试多选题\", \"options\": [\"123\", \"12\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740453107627, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"text\", \"index\": 6, \"label\": \"\", \"title\": \"测试填空题\", \"options\": [\"\", \"\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"请输入\"}, {\"id\": 1740453118485, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"textarea\", \"index\": 7, \"label\": \"\", \"title\": \"测试文本域\", \"options\": [\"\", \"\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"123\"}, {\"id\": 1740453133408, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"select\", \"index\": 8, \"label\": \"\", \"title\": \"测试下拉选择\", \"options\": [\"1\", \"123\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740453147118, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"date\", \"index\": 9, \"label\": \"\", \"title\": \"测试日期选择\", \"options\": [\"\", \"\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740453158724, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"time\", \"index\": 10, \"label\": \"\", \"title\": \"测试时间选择\", \"options\": [\"\", \"\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740453169569, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"number\", \"index\": 11, \"label\": \"\", \"title\": \"测试数字输入\", \"options\": [\"\", \"\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}, {\"id\": 1740463523979, \"max\": 100, \"min\": 0, \"step\": 1, \"type\": \"single\", \"index\": 12, \"label\": \"\", \"title\": \"123\", \"options\": [\"123\", \"1231\"], \"required\": false, \"dateFormat\": \"YYYY-MM-DD\", \"timeFormat\": \"HH:mm:ss\", \"placeholder\": \"\"}]', '2025-02-24 11:53:00', '2025-02-24 11:53:00');
+INSERT INTO `sys_questionnaires` VALUES (2, '问卷2', '22', 1, NULL, '2025-02-25 11:10:31', '2025-02-25 11:10:31');
 
 -- ----------------------------
 -- Table structure for sys_responses
@@ -139,7 +144,7 @@ CREATE TABLE `sys_responses`  (
   INDEX `student_id`(`student_id` ASC) USING BTREE,
   CONSTRAINT `sys_responses_ibfk_1` FOREIGN KEY (`questionnaire_id`) REFERENCES `sys_questionnaires` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `sys_responses_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_responses
