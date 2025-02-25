@@ -53,13 +53,14 @@
       :columns="columns"
       :data-source="filteredQuestions"
       :pagination="false"
+       :scroll="{ y: 600}"
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'options'">
           <div style="display: flex; align-items: center">
             <div style="border-right: 1px solid #eee; padding-right: 5px;">
             <!-- 选项类题目 -->
-            <template v-if="['radio', 'checkbox', 'select', 'radio-button', 'checkbox-button'].includes(record.type)">
+            <template v-if="['single', 'multiple', 'select', 'radio', 'checkbox'].includes(record.type)">
               {{ record.options.join('、') }}
             </template>
             
@@ -125,10 +126,10 @@ const props = defineProps({
 });
 
 const questionTypes = [
-  { label: "单选框", value: "radio" },
-  { label: "多选框", value: "checkbox" },
-  { label: "单选按钮", value: "radio-button" },
-  { label: "多选按钮", value: "checkbox-button" },
+  { label: '单选题', value: 'single' },
+  { label: '多选题', value: 'multiple' },
+  { label: '单选框', value: 'radio' },
+  { label: '多选框', value: 'checkbox' },
   { label: "填空框", value: "text" },
   { label: "文本域", value: "textarea" },
   { label: "下拉选择", value: "select" },
@@ -261,6 +262,24 @@ defineEmits(["back"]);
 
 .text-gray {
   color: #999;
+}
+
+:deep(.ant-table-body){
+
+  &::-webkit-scrollbar {
+    width: 0.3vw;
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(117, 117, 117, 0.184);
+    border-radius: 50vh;
+    transition: 0.3s all;
+
+    &:hover {
+      background-color:rgba(117, 117, 117, 0.34)
+    }
+  }
 }
 
 .ml-2 {

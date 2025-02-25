@@ -34,6 +34,9 @@ public class CourseQuestionnaire implements Serializable {
     // 问卷ID
     private Long questionnaireId;
 
+    // 问卷状态：0-待发布，1-进行中，2-已完成
+    private Integer status;
+
     // 关联时间
     private LocalDateTime createdAt;
 }

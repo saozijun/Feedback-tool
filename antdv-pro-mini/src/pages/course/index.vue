@@ -1,99 +1,78 @@
 <template>
-  <div class="box">
-    <a-card mb-4>
-      <a-form :model="formModel">
-        <a-row :gutter="[15, 0]">
-          <a-col>
-            <a-form-item name="name" label="名称">
-              <a-input
-                v-model:value="formModel.name"
-                placeholder="请输入名称"
-              />
-            </a-form-item>
-          </a-col>
-          <a-col>
-            <a-space flex justify-end w-full>
-              <a-button :loading="loading" type="primary" @click="onSearch">
-                查询
-              </a-button>
-              <a-button :loading="loading" @click="onReset"> 重置 </a-button>
-              <a-button type="primary" @click="open">
-                <template #icon>
-                  <PlusOutlined />
-                </template>
-                新增
-              </a-button>
-            </a-space>
-          </a-col>
-        </a-row>
-      </a-form>
-    </a-card>
-    <a-table :columns="columns" :data-source="tableData" :pagination="false">
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'createdAt'">
-          <span>{{ parseTime(record.createdAt) }}</span>
-        </template>
-        <template v-else-if="column.key === 'operation'">
-          <a-button style="padding-left: 0"  type="link" @click="wjOpen(record)">问卷</a-button>
-          <a-button style="padding: 0"  type="link" @click="open(record)">编辑</a-button>
-          <a-popconfirm title="确定删除吗?" @confirm="onDelete(record.id)">
-            <a-button type="link" danger>删除</a-button>
+  <div class="box" v-if="!showQuestionnaire && !showStudent">
+    <a-row :gutter="[15, 0]" style="display: flex; justify-content: space-between;align-items: center;margin-bottom: 20px;">
+      <a-col style="font-size: 22px; font-weight: bold; color: #252525;"> 我的课程 </a-col>
+      <a-col>
+        <a-space flex justify-end w-full>
+          <a-button type="primary" @click="open">
+            <template #icon>
+              <PlusOutlined />
+            </template>
+            添加课程
+          </a-button>
+        </a-space>
+      </a-col>
+    </a-row>
+    <div class="course-list">
+      <div class="course-item" v-for="(v,i) in tableData" :key="i" @click="goDetail(v)">
+        <div class="tips">
+          <div class="course-edit" @click.stop="open(v)">
+            <EditOutlined />
+          </div>
+          <a-popconfirm title="确定删除该课程吗?" @confirm="onDelete(v.id)">
+            <div class="course-del" @click.stop>
+              <DeleteOutlined />
+            </div>
           </a-popconfirm>
-        </template>
-      </template>
-    </a-table>
-    <div class="pagination">
-      <a-pagination
-        v-model:current="formModel.pageNum"
-        :total="total"
-        @change="onPageChange"
-      />
+        </div>
+        <p>{{ v.name }}</p>
+        <span>点击查看详情</span>
+      </div>
     </div>
     <Edit ref="editRef" @saveOk="getList"></Edit>
   </div>
+  <QuestionnaireList
+    v-if="showQuestionnaire"
+    ref="questionnaireListRef"
+    :courseId="courseId"
+    @back="showQuestionnaire = false"
+  ></QuestionnaireList>
+  <Student
+    v-if="showStudent"
+    ref="studentRef"
+    :courseId="courseId"
+    @back="showStudent = false"
+  ></Student>
 </template>
 <script setup>
-import { PlusOutlined } from "@ant-design/icons-vue";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons-vue";
 import { ref, onMounted } from "vue";
 import { message } from "ant-design-vue";
 import { parseTime } from "~/utils";
-import { list, del } from "~/api/teacher/courses.js";
+import { allList, del } from "~/api/teacher/courses.js";
 import Edit from "./components/Edit.vue";
+import QuestionnaireList from "./components/questionnaireList.vue";
+import Student from "./components/Student.vue";
+import { useRouter } from "vue-router";
+
 const editRef = ref(null);
 const expand = ref(false);
 const loading = ref(false);
 const tableData = ref([]);
-const total = ref(0);
-const formModel = ref({
-  pageNum: 1,
-  pageSize: 10,
-  name: "",
-});
+const courseId = ref(0);
+const showQuestionnaire = ref(false);
+const showStudent = ref(false);
+const router = useRouter();
 
 onMounted(() => {
   getList();
 });
 
-const onPageChange = (page) => {
-  getList();
-};
-const onSearch = () => {
-  getList();
-};
-const onReset = () => {
-  formModel.value = {};
-  getList();
-};
-
 const getList = async () => {
   loading.value = true;
   try {
-    const { data } = await list(formModel.value);
-    total.value = data.total;
-    data.records.map((item, i) => {
-      item.index = i + 1;
-    });
-    tableData.value = data.records;
+    const { data } = await allList();
+    tableData.value = data;
   } catch (error) {
     console.log(error);
   } finally {
@@ -115,45 +94,107 @@ const open = (record = {}) => {
   editRef.value.open(record);
 };
 
-const wjOpen = (record) => {
-  message.warning("待开发");
+const wjOpen = (record, type) => {
+  courseId.value = record.id;
+  if (type === "questionnaire") {
+    showQuestionnaire.value = true;
+  } else {
+    showStudent.value = true;
+  }
 };
-const columns = [
-  {
-    title: "序号",
-    dataIndex: "index",
-    key: "index",
-    width: 80,
-  },
-  {
-    title: "课程名称",
-    dataIndex: "name",
-    key: "name",
-  },
-  {
-    title: "课程代码",
-    dataIndex: "code",
-    key: "code",
-  },
-  {
-    title: "创建时间",
-    dataIndex: "createdAt",
-    key: "createdAt",
-  },
-  {
-    title: "操作",
-    key: "operation",
-    fixed: "right",
-    width: 200,
-  },
-];
+
+const goDetail = (course) => {
+  router.push({
+    path: `/course/detail/${course.id}`,
+    query: { name: course.name }
+  });
+};
 </script>
 
 <style lang="less" scoped>
 .box {
   height: calc(100vh - 170px);
-}
+  &:hover {
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(117, 117, 117, 0.184);
+    }
+  }
 
+  &::-webkit-scrollbar {
+    width: 0.3vw;
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 50vh;
+    transition: 0.3s all;
+
+    &:hover {
+      background-color: rgba(117, 117, 117, 0.34);
+    }
+  }
+}
+.course-list{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  .course-item{
+    background: #fff;
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.05);
+    padding: 80px 30px;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    transition: .3s all;
+    position: relative;
+    .tips{
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 11;
+      // opacity: 0;
+      // transform: scale(0);
+      transition: .3s all;
+      .course-edit, .course-del{
+          cursor: pointer;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          justify-content: center;
+          background-color: #f3f3f3;
+          align-items: center;
+          border-radius: 6px;
+          color: #000;
+          transition: .3s all;
+          &:hover{
+            background-color: #252525;
+            color: #fff;
+          }
+      }
+    }
+    &:hover{
+      box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.1);
+      .tips{
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    p{
+      font-size: 26px;
+    }
+    span{
+      font-size: 14px;
+      color: #919191;
+    }
+  }
+}
 :deep(.ant-form-item) {
   margin-bottom: 0;
 }

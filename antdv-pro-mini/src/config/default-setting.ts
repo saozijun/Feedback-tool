@@ -2,7 +2,7 @@ import type { LayoutSetting } from '~@/stores/app'
 
 export default {
   title: '学生反馈工具',
-  theme: 'inverted',
+  theme: 'light',
   logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
   collapsed: false,
   drawerVisible: false,

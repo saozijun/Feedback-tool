@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.cen.service.ICourseQuestionnaireService;
 import com.cen.entity.CourseQuestionnaire;
+import com.cen.controller.dto.CourseQuestionnaireDTO;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,6 +55,52 @@ public class CourseQuestionnaireController {
         QueryWrapper<CourseQuestionnaire> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("id"); //设置id倒序
         return Result.success(courseQuestionnaireService.page(new Page<>(pageNum, pageSize)));
+    }
+
+    // 查询课程问卷关联关系
+    @GetMapping("/course/{courseId}")
+    public Result getQuestionnaireByCourseId(@PathVariable Long courseId) {
+        return Result.success(courseQuestionnaireService.getQuestionnaireByCourseId(courseId));
+    }
+
+    // 批量关联课程和问卷
+    @PostMapping("/bind/{courseId}")
+    public Result bindQuestionnaires(
+            @PathVariable Long courseId,
+            @RequestParam String questionnaireIds) {
+        return Result.success(courseQuestionnaireService.bindQuestionnaires(courseId, questionnaireIds));
+    }
+
+    // 删除课程问卷关联关系
+    @PostMapping("/unbind")
+    public Result unbindQuestionnaire(@RequestBody CourseQuestionnaireDTO dto) {
+        return Result.success(courseQuestionnaireService.unbindQuestionnaire(dto.getCourseId(), dto.getQuestionnaireId()));
+    }
+
+    // 更新问卷状态
+    @PostMapping("/updateStatus")
+    public Result updateStatus(@RequestBody CourseQuestionnaireDTO dto) {
+        return Result.success(courseQuestionnaireService.updateStatus(dto.getCourseId(), 
+                                                                    dto.getQuestionnaireId(), 
+                                                                    dto.getStatus()));
+    }
+
+    // 发布问卷
+    @PostMapping("/publish")
+    public Result publishQuestionnaire(@RequestBody CourseQuestionnaireDTO dto) {
+        return Result.success(courseQuestionnaireService.publishQuestionnaire(dto.getCourseId(), dto.getQuestionnaireId()));
+    }
+
+    // 结束问卷
+    @PostMapping("/end")
+    public Result completeQuestionnaire(@RequestBody CourseQuestionnaireDTO dto) {
+        return Result.success(courseQuestionnaireService.completeQuestionnaire(dto.getCourseId(), dto.getQuestionnaireId()));
+    }
+
+    // 撤回问卷
+    @PostMapping("/revoke")
+    public Result recallQuestionnaire(@RequestBody CourseQuestionnaireDTO dto) {
+        return Result.success(courseQuestionnaireService.recallQuestionnaire(dto.getCourseId(), dto.getQuestionnaireId()));
     }
 }
 

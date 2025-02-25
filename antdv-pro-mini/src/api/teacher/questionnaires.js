@@ -25,3 +25,12 @@ export const list = (data) => {
     return usePost("/questionnaires/delete", data);
   };
   
+    /**
+   * 删除
+   * @param {*} data
+   * @returns
+   */
+    export const allList = (data) => {
+      return useGet("/questionnaires/list", data);
+    };
+    

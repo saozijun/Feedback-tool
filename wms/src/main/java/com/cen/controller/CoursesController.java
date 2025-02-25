@@ -48,6 +48,12 @@ public class CoursesController {
     public Result findOne(@PathVariable Courses courses) {
         return Result.success(coursesService.getById(courses.getId()));
     }
+
+    // 全部课程列表
+    @GetMapping("/allList")
+    public Result allList(){
+        return Result.success(coursesService.list());
+    }
     //分页查询
     @GetMapping("/page")
     public Result findPage(@RequestParam(defaultValue = "1") Integer pageNum,

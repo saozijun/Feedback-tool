@@ -69,8 +69,18 @@ const adminRoutes = [
     component: () => import('~/pages/course/index.vue'),
     meta: {
       title: '我的课程',
-      icon: 'ReadOutlined',
-      roles: ['admin','student','teacher'] 
+      icon: 'BookOutlined',
+      roles: ['admin','teacher'] 
+    }
+  },
+  {
+    path: '/course/detail/:id',
+    name: 'CourseDetail',
+    component: () => import('~/pages/course/detail.vue'),
+    meta: {
+      title: '课程详情',
+      hideInMenu: true,
+      roles: ['admin','teacher'] 
     }
   },
   {
@@ -89,7 +99,7 @@ const adminRoutes = [
     component: () => import('~/pages/datahandle/index.vue'),
     meta: {
       title: '数据处理',
-      icon: 'HighlightOutlined',
+      icon: 'BarChartOutlined',
       roles: ['admin','teacher'] 
     }
   }

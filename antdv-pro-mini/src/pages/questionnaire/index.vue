@@ -62,7 +62,7 @@
   </template>
   <script setup>
   import { PlusOutlined } from "@ant-design/icons-vue";
-  import { ref, onMounted } from "vue";
+  import { ref, onMounted, h } from "vue";
   import { message } from "ant-design-vue";
   import { parseTime } from "~/utils";
   import { list, del } from "~/api/teacher/questionnaires.js";

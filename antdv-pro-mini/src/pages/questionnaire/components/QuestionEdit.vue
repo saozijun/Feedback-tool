@@ -22,7 +22,7 @@
           </a-select-option>
         </a-select>
       </a-form-item>
-      <template v-if="['radio', 'checkbox', 'select', 'radio-button', 'checkbox-button'].includes(formData.type)">
+      <template v-if="['single', 'multiple', 'select', 'radio', 'checkbox'].includes(formData.type)">
         <a-form-item 
           label="选项" 
           name="options"
@@ -101,10 +101,10 @@ const isEdit = ref(false)
 const formRef = ref()
 
 const questionTypes = [
+  { label: '单选题', value: 'single' },
+  { label: '多选题', value: 'multiple' },
   { label: '单选框', value: 'radio' },
   { label: '多选框', value: 'checkbox' },
-  { label: '单选按钮', value: 'radio-button' },
-  { label: '多选按钮', value: 'checkbox-button' },
   { label: '填空框', value: 'text' },
   { label: '文本域', value: 'textarea' },
   { label: '下拉选择', value: 'select' },
@@ -115,6 +115,7 @@ const questionTypes = [
 
 const formData = reactive({
   type: '',
+  label: '',
   title: '',
   options: ['', ''],
   required: false,
@@ -151,9 +152,11 @@ const rules = {
 }
 
 const handleTypeChange = (value) => {
+  // formData.label = questionTypes.find(item => item.value === value).label
   if (['radio', 'checkbox', 'select', 'radio-button', 'checkbox-button'].includes(value)) {
     formData.options = ['', '']
   }
+
 }
 
 const addOption = () => {
@@ -170,6 +173,7 @@ const removeOption = (index) => {
 const resetForm = () => {
   Object.assign(formData, {
     type: undefined,
+    label: '',
     title: '',
     options: ['', ''],
     required: false,

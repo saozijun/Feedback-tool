@@ -27,6 +27,12 @@ public class QuestionnairesController {
 
     @Resource
     private IQuestionnairesService questionnairesService;
+
+    // 查询所有
+    @GetMapping("/list")
+    public Result list(){
+        return Result.success(questionnairesService.list());
+    }
     //新增或修改
     @PostMapping("/save")
     public Result save(@RequestBody Questionnaires questionnaires) {

@@ -23,12 +23,12 @@ public class CodeGenerator {
                     builder.author("volcano") // 设置作者
                             //  .enableSwagger() // 开启 swagger 模式
                             .fileOverride() // 覆盖已生成文件
-                            .outputDir("D:\\WeChat\\WeChat Files\\wxid_e64v1xkwsujd12\\FileStorage\\File\\2025-02\\dp\\wms\\src\\main\\java\\"); // 指定输出目录
+                            .outputDir("D:\\项目\\Feedback-tool\\wms\\src\\main\\java\\"); // 指定输出目录
                 })
                 .packageConfig(builder -> {
                     builder.parent("com.cen") // 设置父包名
                             .moduleName(null) // 设置父包模块名
-                            .pathInfo(Collections.singletonMap(OutputFile.mapperXml, "D:\\WeChat\\WeChat Files\\wxid_e64v1xkwsujd12\\FileStorage\\File\\2025-02\\dp\\wms\\src\\main\\resources\\mapper\\")); // 设置mapperXml生成路径
+                            .pathInfo(Collections.singletonMap(OutputFile.mapperXml, "D:\\项目\\Feedback-tool\\wms\\src\\main\\resources\\mapper\\")); // 设置mapperXml生成路径
                 })
                 .strategyConfig(builder -> {
                     builder.addInclude("sys_course_students") // 设置需要生成的表名

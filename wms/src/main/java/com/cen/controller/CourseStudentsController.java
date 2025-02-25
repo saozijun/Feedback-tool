@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.cen.service.ICourseStudentsService;
 import com.cen.entity.CourseStudents;
+import com.cen.controller.dto.CourseStudentDTO;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,6 +55,28 @@ public class CourseStudentsController {
         QueryWrapper<CourseStudents> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("id"); //设置id倒序
         return Result.success(courseStudentsService.page(new Page<>(pageNum, pageSize)));
+    }
+
+    // 查询课程关联的学生列表(分页)
+    @GetMapping("/course/{courseId}")
+    public Result getStudentsByCourseId(
+            @PathVariable Long courseId,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "") String nickname) {
+        return Result.success(courseStudentsService.getStudentsByCourseId(courseId, pageNum, pageSize, nickname));
+    }
+
+    // 批量关联学生到课程
+    @PostMapping("/bind")
+    public Result bindStudents(@RequestBody CourseStudentDTO dto) {
+        return Result.success(courseStudentsService.bindStudents(dto.getCourseId(), dto.getStudentIds()));
+    }
+
+    // 删除课程学生关联关系
+    @PostMapping("/unbind")
+    public Result unbindStudent(@RequestBody CourseStudentDTO dto) {
+        return Result.success(courseStudentsService.unbindStudent(dto.getCourseId(), dto.getStudentId()));
     }
 }
 
