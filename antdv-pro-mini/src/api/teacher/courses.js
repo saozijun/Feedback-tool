@@ -122,3 +122,12 @@ export const end = (data) => {
 export const revoke = (data) => {
   return usePost("/courseQuestionnaire/revoke", data);
 };
+
+/**
+ * 获取课程反馈列表
+ * @param {number} courseId
+ * @returns {Promise}
+ */
+export const getFeedbacks = (courseId) => {
+  return useGet(`/courseFeedback/course/${courseId}`);
+};

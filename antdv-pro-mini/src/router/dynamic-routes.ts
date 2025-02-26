@@ -49,7 +49,7 @@ const adminRoutes = [
         component: () => import('~/pages/system/role/index.vue'),
         meta: {
           title: '角色管理',
-          roles: ['admin']
+          roles: []
         },
       },
       {
@@ -90,7 +90,7 @@ const adminRoutes = [
     meta: {
       title: '我的问卷',
       icon: 'FileSearchOutlined',
-      roles: ['admin','student','teacher'] 
+      roles: ['admin','teacher'] 
     }
   },
   {
@@ -102,6 +102,34 @@ const adminRoutes = [
       icon: 'BarChartOutlined',
       roles: ['admin','teacher'] 
     }
+  },
+  {
+    path: '/studentCoures',
+    name: 'StudentCoures',
+    component: () => import('~/pages/student/course/index.vue'),
+    meta: {
+      title: '我的课程',
+      icon: 'BookOutlined',
+      roles: ['admin','student'] 
+    }
+  },{
+    path: '/studentQuestionnaire',
+    name: 'StudentQuestionnaire',
+    component: () => import('~/pages/student/questionnaire/index.vue'),
+    meta: {
+      title: '我的问卷',
+      icon: 'FileSearchOutlined',
+      roles: ['admin','student'] 
+    }
+  },{
+    path: '/student/course/detail/:id',
+    name: 'StudentCourseDetail',
+    component: () => import('~/pages/student/course/detail.vue'),
+    meta: {
+      title: '课程详情',
+      hideInMenu: true,
+      roles: ['admin','student'] 
+    }
   }
 ]
 
@@ -112,8 +140,10 @@ export const rootRoute: RouteRecordRaw = {
     const userStore = useUserStore()
     if (userStore.userInfo.role === 'admin') {
       return ROOT_ROUTE_REDIRECT_PATH
-    } else {
+    } else if (userStore.userInfo.role === 'teacher') {
       return '/course'
+    } else {
+      return '/studentCoures'
     }
   },
   component: Layout,

@@ -19,6 +19,18 @@ import java.util.Map;
 import com.cen.controller.dto.QuestionnaireWithStatusDTO;
 import com.cen.enums.QuestionnaireStatus;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import java.util.HashMap;
+import java.util.Set;
+import com.cen.entity.QuestionnaireResponses;
+import com.cen.mapper.QuestionnaireResponsesMapper;
+import com.cen.controller.dto.QuestionnaireResponseDTO;
+import com.cen.entity.Courses;
+import com.cen.mapper.CoursesMapper;
+import com.cen.entity.User;
+import com.cen.mapper.UserMapper;
+import com.cen.controller.dto.QuestionnaireFullInfoDTO;
+import java.util.Comparator;
+import com.cen.controller.dto.QuestionnaireSubmissionStatsDTO;
 
 import javax.annotation.Resource;
 
@@ -36,6 +48,15 @@ public class CourseQuestionnaireServiceImpl extends ServiceImpl<CourseQuestionna
     @Resource
     private QuestionnairesMapper questionnairesMapper;
     
+    @Resource
+    private QuestionnaireResponsesMapper questionnaireResponsesMapper;
+
+    @Resource
+    private CoursesMapper coursesMapper;
+
+    @Resource
+    private UserMapper userMapper;
+
     @Override
     public List<QuestionnaireWithStatusDTO> getQuestionnaireByCourseId(Long courseId) {
         // 1. 先查询关联表
@@ -209,5 +230,211 @@ public class CourseQuestionnaireServiceImpl extends ServiceImpl<CourseQuestionna
                     .set("status", QuestionnaireStatus.PENDING.getCode());
         
         return this.update(updateWrapper);
+    }
+
+    @Override
+    public Map<String, List<QuestionnaireWithStatusDTO>> getQuestionnairesByStatus(Long courseId, Long studentId) {
+        // 1. 获取课程所有问卷
+        List<QuestionnaireWithStatusDTO> allQuestionnaires = getQuestionnaireByCourseId(courseId);
+        
+        // 2. 查询学生的所有问卷提交记录
+        QueryWrapper<QuestionnaireResponses> responseQuery = new QueryWrapper<>();
+        responseQuery.eq("course_id", courseId)
+                    .eq("student_id", studentId);
+        List<QuestionnaireResponses> responses = questionnaireResponsesMapper.selectList(responseQuery);
+        
+        // 创建已提交问卷ID集合
+        Set<Long> submittedQuestionnaireIds = responses.stream()
+                .map(QuestionnaireResponses::getQuestionnaireId)
+                .collect(Collectors.toSet());
+        
+        // 设置提交状态
+        allQuestionnaires.forEach(dto -> {
+            dto.setHasSubmitted(submittedQuestionnaireIds.contains(dto.getQuestionnaire().getId()));
+        });
+        
+        // 3. 按状态分类
+        Map<String, List<QuestionnaireWithStatusDTO>> result = new HashMap<>();
+        
+        // 进行中的问卷
+        List<QuestionnaireWithStatusDTO> ongoingQuestionnaires = allQuestionnaires.stream()
+                .filter(q -> q.getStatus() == QuestionnaireStatus.IN_PROGRESS.getCode())
+                .collect(Collectors.toList());
+        
+        // 已结束的问卷
+        List<QuestionnaireWithStatusDTO> completedQuestionnaires = allQuestionnaires.stream()
+                .filter(q -> q.getStatus() == QuestionnaireStatus.COMPLETED.getCode())
+                .collect(Collectors.toList());
+        
+        // 4. 放入结果Map
+        result.put("ongoing", ongoingQuestionnaires);
+        result.put("completed", completedQuestionnaires);
+        
+        return result;
+    }
+
+    @Override
+    public QuestionnaireResponseDTO getStudentResponse(Long courseId, Long questionnaireId, Long studentId) {
+        // 1. 查询问卷答案
+        QueryWrapper<QuestionnaireResponses> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("course_id", courseId)
+                    .eq("questionnaire_id", questionnaireId)
+                    .eq("student_id", studentId);
+        
+        QuestionnaireResponses response = questionnaireResponsesMapper.selectOne(queryWrapper);
+        
+        if (response == null) {
+            return null;  // 学生未提交答案
+        }
+        
+        // 2. 查询问卷信息
+        Questionnaires questionnaire = questionnairesMapper.selectById(questionnaireId);
+        if (questionnaire == null) {
+            throw new IllegalArgumentException("问卷不存在");
+        }
+        
+        // 3. 组装返回数据
+        QuestionnaireResponseDTO dto = new QuestionnaireResponseDTO();
+        dto.setId(response.getId());
+        dto.setQuestionnaire(questionnaire);
+        dto.setAnswers(response.getAnswers());
+        dto.setSubmittedAt(response.getSubmittedAt());
+        
+        return dto;
+    }
+
+    @Override
+    public List<QuestionnaireFullInfoDTO> getStudentQuestionnaires(Long studentId) {
+        // 1. 获取学生所有课程
+        List<Courses> studentCourses = coursesMapper.getCoursesByStudentId(studentId);
+        if (studentCourses.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // 2. 获取所有课程ID
+        List<Long> courseIds = studentCourses.stream()
+                .map(Courses::getId)
+                .collect(Collectors.toList());
+                
+        // 3. 查询这些课程的进行中和已结束的问卷
+        QueryWrapper<CourseQuestionnaire> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("course_id", courseIds)
+                .in("status", Arrays.asList(
+                        QuestionnaireStatus.IN_PROGRESS.getCode(),
+                        QuestionnaireStatus.COMPLETED.getCode()
+                ));
+        List<CourseQuestionnaire> courseQuestionnaires = this.list(queryWrapper);
+        
+        // 4. 获取所有问卷ID
+        List<Long> questionnaireIds = courseQuestionnaires.stream()
+                .map(CourseQuestionnaire::getQuestionnaireId)
+                .collect(Collectors.toList());
+                
+        // 5. 查询问卷详情
+        List<Questionnaires> questionnaires = questionnairesMapper.selectBatchIds(questionnaireIds);
+        Map<Long, Questionnaires> questionnaireMap = questionnaires.stream()
+                .collect(Collectors.toMap(Questionnaires::getId, q -> q));
+                
+        // 6. 创建课程ID到课程对象的映射
+        Map<Long, Courses> courseMap = studentCourses.stream()
+                .collect(Collectors.toMap(Courses::getId, c -> c));
+                
+        // 7. 获取所有教师ID
+        Set<Long> teacherIds = studentCourses.stream()
+                .map(Courses::getTeacherId)
+                .collect(Collectors.toSet());
+                
+        // 8. 查询教师信息
+        List<User> teachers = userMapper.selectBatchIds(teacherIds);
+        Map<Long, User> teacherMap = teachers.stream()
+                .collect(Collectors.toMap(User::getId, t -> t));
+                
+        // 9. 查询学生的问卷提交记录
+        QueryWrapper<QuestionnaireResponses> responseQuery = new QueryWrapper<>();
+        responseQuery.eq("student_id", studentId);
+        List<QuestionnaireResponses> responses = questionnaireResponsesMapper.selectList(responseQuery);
+        Set<Long> submittedQuestionnaireIds = responses.stream()
+                .map(QuestionnaireResponses::getQuestionnaireId)
+                .collect(Collectors.toSet());
+                
+        // 10. 组装返回数据
+        return courseQuestionnaires.stream()
+                .map(cq -> {
+                    QuestionnaireFullInfoDTO dto = new QuestionnaireFullInfoDTO();
+                    dto.setQuestionnaire(questionnaireMap.get(cq.getQuestionnaireId()));
+                    dto.setCourse(courseMap.get(cq.getCourseId()));
+                    dto.setTeacher(teacherMap.get(courseMap.get(cq.getCourseId()).getTeacherId()));
+                    dto.setStatus(cq.getStatus());
+                    dto.setStatusDescription(Arrays.stream(QuestionnaireStatus.values())
+                            .filter(status -> status.getCode() == cq.getStatus())
+                            .findFirst()
+                            .map(QuestionnaireStatus::getDescription)
+                            .orElse("未知状态"));
+                    dto.setHasSubmitted(submittedQuestionnaireIds.contains(cq.getQuestionnaireId()));
+                    dto.setCreatedAt(cq.getCreatedAt());
+                    return dto;
+                })
+                .sorted(Comparator.comparing(QuestionnaireFullInfoDTO::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<QuestionnaireSubmissionStatsDTO> getQuestionnaireSubmissionStats(Long courseId) {
+        // 1. 获取课程的所有问卷
+        QueryWrapper<CourseQuestionnaire> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("course_id", courseId);
+        List<CourseQuestionnaire> courseQuestionnaires = this.list(queryWrapper);
+        
+        if (courseQuestionnaires.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // 2. 获取所有问卷ID
+        List<Long> questionnaireIds = courseQuestionnaires.stream()
+                .map(CourseQuestionnaire::getQuestionnaireId)
+                .collect(Collectors.toList());
+                
+        // 3. 查询问卷详情
+        List<Questionnaires> questionnaires = questionnairesMapper.selectBatchIds(questionnaireIds);
+        Map<Long, Questionnaires> questionnaireMap = questionnaires.stream()
+                .collect(Collectors.toMap(Questionnaires::getId, q -> q));
+                
+        // 4. 获取该课程的总学生数
+        Long totalStudents = coursesMapper.getStudentCountByCourseId(courseId);
+        
+        // 5. 查询每个问卷的提交记录数
+        Map<Long, Long> submissionCountMap = new HashMap<>();
+        for (Long questionnaireId : questionnaireIds) {
+            QueryWrapper<QuestionnaireResponses> responseQuery = new QueryWrapper<>();
+            responseQuery.eq("course_id", courseId)
+                        .eq("questionnaire_id", questionnaireId);
+            long count = questionnaireResponsesMapper.selectCount(responseQuery);
+            submissionCountMap.put(questionnaireId, count);
+        }
+        
+        // 6. 组装返回数据
+        return courseQuestionnaires.stream()
+                .map(cq -> {
+                    QuestionnaireSubmissionStatsDTO dto = new QuestionnaireSubmissionStatsDTO();
+                    dto.setQuestionnaire(questionnaireMap.get(cq.getQuestionnaireId()));
+                    dto.setStatus(cq.getStatus());
+                    dto.setStatusDescription(Arrays.stream(QuestionnaireStatus.values())
+                            .filter(status -> status.getCode() == cq.getStatus())
+                            .findFirst()
+                            .map(QuestionnaireStatus::getDescription)
+                            .orElse("未知状态"));
+                    dto.setTotalStudents(totalStudents);
+                    
+                    Long submittedCount = submissionCountMap.get(cq.getQuestionnaireId());
+                    dto.setSubmittedCount(submittedCount);
+                    
+                    // 计算提交率
+                    double rate = totalStudents == 0 ? 0.0 : 
+                        (double) submittedCount / totalStudents * 100;
+                    dto.setSubmissionRate(Math.round(rate * 100.0) / 100.0);  // 保留两位小数
+                    
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

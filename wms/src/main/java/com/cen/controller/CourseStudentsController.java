@@ -57,14 +57,10 @@ public class CourseStudentsController {
         return Result.success(courseStudentsService.page(new Page<>(pageNum, pageSize)));
     }
 
-    // 查询课程关联的学生列表(分页)
+    // 查询课程关联的学生列表
     @GetMapping("/course/{courseId}")
-    public Result getStudentsByCourseId(
-            @PathVariable Long courseId,
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(defaultValue = "") String nickname) {
-        return Result.success(courseStudentsService.getStudentsByCourseId(courseId, pageNum, pageSize, nickname));
+    public Result getStudentsByCourseId(@PathVariable Long courseId) {
+        return Result.success(courseStudentsService.getStudentsByCourseId(courseId));
     }
 
     // 批量关联学生到课程

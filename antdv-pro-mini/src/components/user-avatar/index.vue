@@ -7,11 +7,17 @@ const { avatar, nickname } = storeToRefs(useUserStore())
 const logout = () => {
   const token = useAuthorization()
   const userStore = useUserStore()
+  const multiTabStore = useMultiTab()
   
   // 清除 token
   token.value = null
   
+  // 清除用户信息
   userStore.clearUserInfo()
+  
+  // 清除标签页
+  multiTabStore.clear()
+  
   notification.success({
     message: '退出成功',
     description: '期待您的下次使用',

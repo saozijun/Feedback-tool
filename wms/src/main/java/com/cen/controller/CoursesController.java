@@ -51,8 +51,13 @@ public class CoursesController {
 
     // 全部课程列表
     @GetMapping("/allList")
-    public Result allList(){
-        return Result.success(coursesService.list());
+    public Result allList(@RequestParam(required = false) Long teacherId){
+        QueryWrapper<Courses> queryWrapper = new QueryWrapper<>();
+        if (teacherId != null) {
+            queryWrapper.eq("teacher_id", teacherId);
+        }
+        queryWrapper.orderByDesc("id"); // 按ID倒序排序
+        return Result.success(coursesService.list(queryWrapper));
     }
     //分页查询
     @GetMapping("/page")
@@ -64,6 +69,12 @@ public class CoursesController {
         queryWrapper.like(Strings.isNotEmpty(name),"name",name);
         queryWrapper.orderByDesc("id"); //设置id倒序
         return Result.success(coursesService.page(new Page<>(pageNum, pageSize),queryWrapper));
+    }
+
+    // 查询学生关联的课程列表
+    @GetMapping("/student/{studentId}")
+    public Result getCoursesByStudentId(@PathVariable Long studentId) {
+        return Result.success(coursesService.getCoursesByStudentId(studentId));
     }
 }
 

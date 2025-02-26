@@ -20,7 +20,8 @@
             :value="v.id"
             :key="i"
             :disabled="nowList.indexOf(v.id) !== -1"
-            >{{ v.title }}</a-select-option
+            >{{ v.title }}
+            </a-select-option
           >
         </a-select>
       </a-form-item>
@@ -71,12 +72,12 @@ const handleOk = async () => {
 };
 const open = async (id, list) => {
   list.map((v) => {
-    nowList.value.push(v.id);
+    nowList.value.push(v.questionnaire.id);
   });
   modelRef.value.questionnaire = nowList.value;
   courseId.value = id;
   visible.value = true;
-  const { data } = await allList();
+  const { data } = await allList({ teacherId: userStore.userInfo.id });
   questionnaireList.value = data;
 };
 defineExpose({

@@ -80,24 +80,32 @@ const submit = async () => {
       }
       const { data } = await login(loginData)
       
-      // 设置 token
-      token.value = data.token
-      
       // 设置用户信息
       const userStore = useUserStore()
-      if (loginModel.username === 'admin') data.role = 'admin'
       userStore.userInfo = data
       
+      // 清除之前的路由数据
+      userStore.routerData = null
+      
       // 生成动态路由
-      await userStore.generateDynamicRoutes()
+      const currentRoute = await userStore.generateDynamicRoutes()
+      
+      // 添加新路由
+      await router.addRoute(currentRoute)
+      
+      // 设置 token
+      token.value = data.token
 
       notification.success({
         message: '登录成功',
         description: '欢迎回来',
         duration: 2
       })
-      // 跳转到首页
-      router.push('/')
+
+      // 在登录成功后添加延时
+      setTimeout(() => {
+        router.replace('/')
+      }, 100)
     } else {
       let roleObj = roleList.find(item => item.value == role.value)
       let registerData = {

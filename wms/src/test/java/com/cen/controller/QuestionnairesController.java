@@ -31,13 +31,8 @@ public class QuestionnairesController {
 
     // 查询所有
     @GetMapping("/list")
-    public Result list(@RequestParam(required = false) Long teacherId){
-        QueryWrapper<Questionnaires> queryWrapper = new QueryWrapper<>();
-        if (teacherId != null) {
-            queryWrapper.eq("created_by", teacherId);
-        }
-        queryWrapper.orderByDesc("id"); // 按ID倒序排序
-        return Result.success(questionnairesService.list(queryWrapper));
+    public Result list(){
+        return Result.success(questionnairesService.list());
     }
     //新增或修改
     @PostMapping("/save")
@@ -66,10 +61,10 @@ public class QuestionnairesController {
                            @RequestParam(defaultValue = "") String title,
                            @RequestParam(required = false) Long teacherId) {
         QueryWrapper<Questionnaires> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like(Strings.isNotEmpty(title),"title",title);
         if (teacherId != null) {
             queryWrapper.eq("created_by", teacherId);
         }
-        queryWrapper.like(Strings.isNotEmpty(title),"title",title);
         queryWrapper.orderByDesc("id"); //设置id倒序
         return Result.success(questionnairesService.page(new Page<>(pageNum, pageSize), queryWrapper));
     }

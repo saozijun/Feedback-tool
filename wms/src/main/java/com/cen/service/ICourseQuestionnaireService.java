@@ -4,8 +4,12 @@ import com.cen.entity.CourseQuestionnaire;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cen.entity.Questionnaires;
 import com.cen.controller.dto.QuestionnaireWithStatusDTO;
+import com.cen.controller.dto.QuestionnaireResponseDTO;
+import com.cen.controller.dto.QuestionnaireFullInfoDTO;
+import com.cen.controller.dto.QuestionnaireSubmissionStatsDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -33,4 +37,16 @@ public interface ICourseQuestionnaireService extends IService<CourseQuestionnair
 
     // 撤回问卷
     boolean recallQuestionnaire(Long courseId, Long questionnaireId);
+
+    // 获取课程的进行中和已结束问卷，并标记是否已提交
+    Map<String, List<QuestionnaireWithStatusDTO>> getQuestionnairesByStatus(Long courseId, Long studentId);
+
+    // 获取学生的问卷答案
+    QuestionnaireResponseDTO getStudentResponse(Long courseId, Long questionnaireId, Long studentId);
+
+    // 获取学生的所有课程问卷
+    List<QuestionnaireFullInfoDTO> getStudentQuestionnaires(Long studentId);
+
+    // 获取课程问卷的填写统计信息
+    List<QuestionnaireSubmissionStatsDTO> getQuestionnaireSubmissionStats(Long courseId);
 }

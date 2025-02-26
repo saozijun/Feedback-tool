@@ -78,6 +78,12 @@ export const useMultiTab = defineStore('multi-tab', () => {
     router.push(key)
   }
 
+  const clear = () => {
+    list.value = []
+    activeKey.value = undefined
+    refreshItem.value = null
+  }
+
   watch(router.currentRoute, (route) => {
     if (route.fullPath === activeKey.value) return
     activeKey.value = route.fullPath
@@ -89,5 +95,6 @@ export const useMultiTab = defineStore('multi-tab', () => {
     close,
     refresh,
     switchTab,
+    clear
   }
 })

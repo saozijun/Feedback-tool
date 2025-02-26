@@ -85,15 +85,15 @@
           </a-button>
         </div>
         <template v-if="studentList.length">
-          <div class="grid-list">
-              <div class="grid-item" v-for="(item, index) in studentList" :key="index">
+          <div class="grid-list student-list">
+              <div class="grid-item student-item" v-for="(item, index) in studentList" :key="index">
                 <div class="item-content">
+                  <img :src="item.avatarUrl ? item.avatarUrl : '/src/assets/images/avatar.png'" alt="">
                   <h4>{{ item.nickname }}</h4>
-                  <p>{{ item.email }}</p>
                 </div>
-                <div class="item-footer">
+                <div class="student-icon">
                   <a-popconfirm title="确定删除该学生吗?" @confirm="deleteStudent(item.id)">
-                    <a-button type="link" danger>删除</a-button>
+                    <DeleteOutlined  style="font-size: 18px;color: #cb4d4d"/>
                   </a-popconfirm>
                 </div>
               </div>
@@ -111,6 +111,38 @@
               </a-empty>
             </div>
           </template>
+      </a-tab-pane>
+      <a-tab-pane key="3" tab="课程反馈">
+        <template v-if="feedbackList.length">
+          <div class="feedback-list">
+            <div class="feedback-item" v-for="(item, index) in feedbackList" :key="index">
+              <div class="feedback-header">
+                <div class="student-info">
+                  <img :src="item.student.avatarUrl || '/src/assets/images/avatar.png'" alt="avatar">
+                  <span class="student-name">{{ item.student.nickname }}</span>
+                </div>
+                <div class="rating">
+                  <a-rate :value="item.feedback.rating" disabled />
+                  <span class="rating-text">{{ getRatingText(item.feedback.rating) }}</span>
+                </div>
+              </div>
+              <div class="feedback-content">
+                {{ item.feedback.content }}
+              </div>
+              <div class="feedback-footer">
+                <span class="feedback-time">{{ parseTime(item.feedback.createdAt, '{y}-{m}-{d} {h}:{i}') }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="empty-container">
+            <a-empty
+              :image="h(MessageOutlined, { style: { fontSize: '64px', color: '#bfbfbf' } })"
+              description="暂无反馈"
+            />
+          </div>
+        </template>
       </a-tab-pane>
     </a-tabs>
 
@@ -132,8 +164,10 @@
 import { ref, onMounted, h } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
-import { ArrowLeftOutlined, PlusOutlined, FileSearchOutlined, TeamOutlined } from '@ant-design/icons-vue';
-import { association, unbind, courseStudents, unbindstudent, publish, end, revoke } from '~/api/teacher/courses.js';
+import { ArrowLeftOutlined, PlusOutlined, FileSearchOutlined, TeamOutlined, DeleteOutlined, MessageOutlined } from '@ant-design/icons-vue';
+import { association, unbind, courseStudents, unbindstudent, publish, end, revoke, getFeedbacks } from '~/api/teacher/courses.js';
+import { stats } from '~/api/teacher/questionnaires.js';
+import { parseTime } from "~/utils";
 import qEdit from './components/qEdit.vue';
 import sEdit from './components/sEdit.vue';
 import QuestionPreview from './components/questionPreview.vue';
@@ -145,6 +179,7 @@ const activeKey = ref('1');
 
 const questionnaireList = ref([]);
 const studentList = ref([]);
+const feedbackList = ref([]);
 const qEditRef = ref(null);
 const sEditRef = ref(null);
 
@@ -154,11 +189,12 @@ const previewData = ref({});
 onMounted(() => {
   getQuestionnaireList();
   getStudentList();
+  getFeedbackList();
 });
 
 const getQuestionnaireList = async () => {
   try {
-    const { data } = await association(courseId.value);
+    const { data } = await stats(courseId.value);
     questionnaireList.value = data;
   } catch (error) {
     console.error(error);
@@ -168,7 +204,16 @@ const getQuestionnaireList = async () => {
 const getStudentList = async () => {
   try {
     const { data } = await courseStudents(courseId.value, {});
-    studentList.value = data.records;
+    studentList.value = data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const getFeedbackList = async () => {
+  try {
+    const { data } = await getFeedbacks(courseId.value);
+    feedbackList.value = data;
   } catch (error) {
     console.error(error);
   }
@@ -254,12 +299,24 @@ const handleRevoke = async (id) => {
     console.error(error);
   }
 };
+
+const getRatingText = (rating) => {
+  const ratingTextMap = {
+    1: '很差',
+    2: '差',
+    3: '一般',
+    4: '好',
+    5: '很好'
+  };
+  return ratingTextMap[rating] || '';
+};
 </script>
 
 <style lang="less" scoped>
 .box {
   padding: 24px;
   background: #fff;
+  min-height: 400px;
   border-radius: 8px;
 }
 
@@ -280,14 +337,16 @@ const handleRevoke = async (id) => {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
 }
-
+.student-list{
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
 .grid-item {
   background: #fff;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
   padding: 16px;
   transition: all 0.3s;
-
+  position: relative;
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
@@ -311,7 +370,21 @@ const handleRevoke = async (id) => {
       font-size: 14px;
     }
   }
-
+  .student-icon {
+    position: absolute;
+    width: 80px;
+    height: 100%;
+    right: 0;
+    top: 0;
+    background: linear-gradient(to left, #f7e1e1, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 26px;
+    transition: .3s ease-in-out;
+    opacity: 0;
+    transform: translateX(100%);
+  }
   .item-footer {
     margin-top: 16px;
     padding-top: 16px;
@@ -326,6 +399,30 @@ const handleRevoke = async (id) => {
       &:not(:last-child) {
         margin-right: 12px;
       }
+    }
+  }
+}
+
+.student-item{
+  overflow: hidden;
+  .item-content{
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+    img{
+      width: 50px;
+      height: 50px;
+      border-radius: 50px;
+    }
+    h4{
+      margin-bottom: 0;
+    }
+  }
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    .student-icon {
+      transform: translateX(0);
+      opacity: 1;
     }
   }
 }
@@ -360,6 +457,85 @@ const handleRevoke = async (id) => {
     }
     .ant-empty-footer {
       margin-top: 16px;
+    }
+  }
+}
+
+.feedback-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.feedback-item {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .student-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .student-name {
+        font-weight: 500;
+        color: #333;
+      }
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      top: -1px;
+      :deep(.ant-rate) {
+        font-size: 16px;
+      }
+
+      .rating-text {
+        color: #666;
+        font-size: 12px;
+
+        margin-left: 5px;
+      }
+    }
+  }
+
+  .feedback-content {
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .feedback-footer {
+    display: flex;
+    justify-content: flex-end;
+    
+    .feedback-time {
+      color: #999;
+      font-size: 12px;
     }
   }
 }

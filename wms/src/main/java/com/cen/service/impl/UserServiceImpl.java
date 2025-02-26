@@ -49,6 +49,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 if(one2==null){
                     throw new ServiceException(Constants.CODE_402,"该用户不是" + userDTO.getRole() + "账号，请切换身份登录");
                 }
+            } else {
+                userDTO.setRole("admin");
             }
             //把数据库查到的one数据拷贝到userDTO里  true是忽略大小写
             BeanUtil.copyProperties(one,userDTO,true);

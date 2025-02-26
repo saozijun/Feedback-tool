@@ -8,4 +8,5 @@ public class QuestionnaireWithStatusDTO {
     private Questionnaires questionnaire;
     private Integer status;
     private String statusDescription;
+    private Boolean hasSubmitted;
 } 

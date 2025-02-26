@@ -35,12 +35,6 @@ public class CourseStudentsServiceImpl extends ServiceImpl<CourseStudentsMapper,
     }
 
     @Override
-    public IPage<User> getStudentsByCourseId(Long courseId, Integer pageNum, Integer pageSize, String nickname) {
-        Page<User> page = new Page<>(pageNum, pageSize);
-        return userMapper.getStudentsByCourseId(page, courseId, nickname);
-    }
-
-    @Override
     @Transactional
     public boolean bindStudents(Long courseId, String studentIds) {
         // 1. 如果学生ID为空，直接返回
@@ -70,5 +64,10 @@ public class CourseStudentsServiceImpl extends ServiceImpl<CourseStudentsMapper,
         queryWrapper.eq("course_id", courseId)
                    .eq("student_id", studentId);
         return this.remove(queryWrapper);
+    }
+
+    @Override
+    public List<User> getStudentsByCourseId(Long courseId) {
+        return userMapper.getStudentsByCourseId(courseId);
     }
 }

@@ -54,7 +54,9 @@ import Edit from "./components/Edit.vue";
 import QuestionnaireList from "./components/questionnaireList.vue";
 import Student from "./components/Student.vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from '~@/stores/user'
 
+const userStore = useUserStore()
 const editRef = ref(null);
 const expand = ref(false);
 const loading = ref(false);
@@ -71,7 +73,7 @@ onMounted(() => {
 const getList = async () => {
   loading.value = true;
   try {
-    const { data } = await allList();
+    const { data } = await allList({teacherId:userStore.userInfo.id});
     tableData.value = data;
   } catch (error) {
     console.log(error);

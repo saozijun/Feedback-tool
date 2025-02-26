@@ -31,7 +31,7 @@ public class CodeGenerator {
                             .pathInfo(Collections.singletonMap(OutputFile.mapperXml, "D:\\项目\\Feedback-tool\\wms\\src\\main\\resources\\mapper\\")); // 设置mapperXml生成路径
                 })
                 .strategyConfig(builder -> {
-                    builder.addInclude("sys_course_students") // 设置需要生成的表名
+                    builder.addInclude("sys_course_feedback") // 设置需要生成的表名
                             .addTablePrefix("t_", "sys_"); // 设置过滤表前缀
                 })
                 //  .templateEngine(new FreemarkerTemplateEngine()) // 使用Freemarker引擎模板，默认的是Velocity引擎模板

@@ -102,5 +102,34 @@ public class CourseQuestionnaireController {
     public Result recallQuestionnaire(@RequestBody CourseQuestionnaireDTO dto) {
         return Result.success(courseQuestionnaireService.recallQuestionnaire(dto.getCourseId(), dto.getQuestionnaireId()));
     }
+
+    // 查询课程的进行中和已结束问卷
+    @GetMapping("/status/{courseId}")
+    public Result getQuestionnairesByStatus(
+            @PathVariable Long courseId,
+            @RequestParam Long studentId) {
+        return Result.success(courseQuestionnaireService.getQuestionnairesByStatus(courseId, studentId));
+    }
+
+    // 查询学生的问卷答案
+    @GetMapping("/response")
+    public Result getStudentResponse(
+            @RequestParam Long courseId,
+            @RequestParam Long questionnaireId,
+            @RequestParam Long studentId) {
+        return Result.success(courseQuestionnaireService.getStudentResponse(courseId, questionnaireId, studentId));
+    }
+
+    // 查询学生的所有课程问卷
+    @GetMapping("/student/questionnaires")
+    public Result getStudentQuestionnaires(@RequestParam Long studentId) {
+        return Result.success(courseQuestionnaireService.getStudentQuestionnaires(studentId));
+    }
+
+    // 获取课程问卷的填写统计信息
+    @GetMapping("/stats/{courseId}")
+    public Result getQuestionnaireSubmissionStats(@PathVariable Long courseId) {
+        return Result.success(courseQuestionnaireService.getQuestionnaireSubmissionStats(courseId));
+    }
 }
 
