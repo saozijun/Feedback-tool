@@ -11,7 +11,7 @@
  Target Server Version : 80039
  File Encoding         : 65001
 
- Date: 26/02/2025 18:07:25
+ Date: 27/02/2025 15:56:59
 */
 
 SET NAMES utf8mb4;
@@ -94,17 +94,20 @@ CREATE TABLE `sys_courses`  (
   `teacher_id` bigint NOT NULL COMMENT '授课教师ID',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `academic_year` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '学年(如2024-2025)',
+  `semester` tinyint NULL DEFAULT NULL COMMENT '学期(1-春季学期,2-秋季学期)',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `code`(`code` ASC) USING BTREE,
   INDEX `teacher_id`(`teacher_id` ASC) USING BTREE,
   CONSTRAINT `sys_courses_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_courses
 -- ----------------------------
-INSERT INTO `sys_courses` VALUES (2, '数学', 'MATH101', 21, '2025-02-24 11:21:04', '2025-02-24 11:21:04');
-INSERT INTO `sys_courses` VALUES (3, '英语', 'ENG102', 21, '2025-02-24 11:21:15', '2025-02-24 11:21:15');
+INSERT INTO `sys_courses` VALUES (2, '数学', 'MATH101', 21, '2025-02-24 11:21:04', '2025-02-24 11:21:04', '2025', 2);
+INSERT INTO `sys_courses` VALUES (3, '英语', 'ENG102', 21, '2025-02-24 11:21:15', '2025-02-24 11:21:15', '2024', 1);
+INSERT INTO `sys_courses` VALUES (4, '测试', '啊哈哈', 21, '2025-02-27 11:09:01', '2025-02-27 11:09:01', '2025', 2);
 
 -- ----------------------------
 -- Table structure for sys_file
