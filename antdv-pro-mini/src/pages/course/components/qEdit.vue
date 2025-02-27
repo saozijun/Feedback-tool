@@ -20,7 +20,8 @@
             :value="v.id"
             :key="i"
             :disabled="nowList.indexOf(v.id) !== -1"
-            >{{ v.title }}
+            >{{ v.title }} 
+            <span style="color: #2881ff; font-size: 12px;" v-if="nowList.indexOf(v.id) !== -1">已关联</span>
             </a-select-option
           >
         </a-select>
@@ -74,7 +75,7 @@ const open = async (id, list) => {
   list.map((v) => {
     nowList.value.push(v.questionnaire.id);
   });
-  modelRef.value.questionnaire = nowList.value;
+  // modelRef.value.questionnaire = nowList.value;
   courseId.value = id;
   visible.value = true;
   const { data } = await allList({ teacherId: userStore.userInfo.id });

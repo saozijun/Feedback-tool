@@ -10,6 +10,15 @@
       <a-form-item label="课程名称" v-bind="validateInfos.name" >
         <a-input v-model:value="modelRef.name" placeholder="请输入"/>
       </a-form-item>
+      <a-form-item label="课程学年" v-bind="validateInfos.academicYear" >
+        <a-date-picker v-model:value="modelRef.academicYear" picker="year" valueFormat="YYYY" placeholder="请选择"/>
+      </a-form-item>
+      <a-form-item label="课程学期" v-bind="validateInfos.semester" >
+        <a-select v-model:value="modelRef.semester" placeholder="请选择">
+          <a-select-option :value="1">春季学期</a-select-option>
+          <a-select-option :value="2">秋季学期</a-select-option>
+        </a-select>
+      </a-form-item>
       <a-form-item label="课程代码" v-bind="validateInfos.code" >
         <a-input v-model:value="modelRef.code" placeholder="请输入"/>
       </a-form-item>
@@ -39,7 +48,9 @@ const { resetFields, validate, validateInfos } = useForm(
   modelRef,
   reactive({
     name: [{ required: true, message: '请输入课程名称'}],
-    code: [{ required: true, message: '请输入课程代码'}]
+    code: [{ required: true, message: '请输入课程代码'}],
+    academicYear: [{ required: true, message: '请输入课程学年'}],
+    semester: [{ required: true, message: '请选择学期'}]
   }),
 );
 const handleOk = async () => {

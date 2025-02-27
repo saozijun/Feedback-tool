@@ -37,6 +37,12 @@ public class Courses implements Serializable {
     // 授课教师ID
     private Long teacherId;
 
+    // 学年
+    private String academicYear;
+
+    // 学期
+    private Integer semester;
+
     // 创建时间
     private LocalDateTime createdAt;
 

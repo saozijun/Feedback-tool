@@ -12,7 +12,7 @@
     <a-tabs v-model:activeKey="activeKey" v-if="!showPreview">
       <a-tab-pane key="1" tab="课程问卷">
         <div class="content-header">
-          <h3>问卷列表</h3>
+          <h3></h3>
           <a-button type="primary" @click="openQuestionnaireEdit">
             <template #icon><PlusOutlined /></template>
             添加问卷
@@ -29,6 +29,7 @@
                 <a-tag style="margin-right: 0;" :color="getStatusColor(item.status)">{{ getStatusText(item.status) }}</a-tag>
               </div>
               <div class="item-footer">
+                <a-button type="link" @click="handleViewStats(item)">填写详情</a-button>
                 <a-button type="link" @click="previewQuestionnaire(item)">预览</a-button>
                 <template v-if="item.status === 0">
                   <a-popconfirm 
@@ -157,6 +158,15 @@
 
     <qEdit ref="qEditRef" @saveOk="getQuestionnaireList" />
     <sEdit ref="sEditRef" @saveOk="getStudentList" />
+
+    <questionnaire-stats
+      v-if="showStats"
+      :data="statsData"
+      @close="() => {
+        showStats = false;
+        getQuestionnaireList();
+      }"
+    />
   </div>
 </template>
 
@@ -165,12 +175,13 @@ import { ref, onMounted, h } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
 import { ArrowLeftOutlined, PlusOutlined, FileSearchOutlined, TeamOutlined, DeleteOutlined, MessageOutlined } from '@ant-design/icons-vue';
-import { association, unbind, courseStudents, unbindstudent, publish, end, revoke, getFeedbacks } from '~/api/teacher/courses.js';
+import { association, unbind, courseStudents, unbindstudent, publish, end, revoke, getFeedbacks, FillinDetails } from '~/api/teacher/courses.js';
 import { stats } from '~/api/teacher/questionnaires.js';
 import { parseTime } from "~/utils";
 import qEdit from './components/qEdit.vue';
 import sEdit from './components/sEdit.vue';
 import QuestionPreview from './components/questionPreview.vue';
+import QuestionnaireStats from './components/questionnaireStats.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -185,6 +196,9 @@ const sEditRef = ref(null);
 
 const showPreview = ref(false);
 const previewData = ref({});
+
+const showStats = ref(false);
+const statsData = ref({});
 
 onMounted(() => {
   getQuestionnaireList();
@@ -310,6 +324,17 @@ const getRatingText = (rating) => {
   };
   return ratingTextMap[rating] || '';
 };
+
+const handleViewStats = async (item) => {
+  let tempData = JSON.parse(JSON.stringify(item));
+  let { data } = await FillinDetails({
+    courseId: courseId.value,
+    questionnaireId: tempData.questionnaire.id
+  })
+  tempData.submissions = data;
+  statsData.value = tempData;
+  showStats.value = true;
+};
 </script>
 
 <style lang="less" scoped>
@@ -376,14 +401,11 @@ const getRatingText = (rating) => {
     height: 100%;
     right: 0;
     top: 0;
-    background: linear-gradient(to left, #f7e1e1, #fff);
     display: flex;
     align-items: center;
     justify-content: flex-end;
     padding-right: 26px;
     transition: .3s ease-in-out;
-    opacity: 0;
-    transform: translateX(100%);
   }
   .item-footer {
     margin-top: 16px;
@@ -420,10 +442,6 @@ const getRatingText = (rating) => {
   }
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    .student-icon {
-      transform: translateX(0);
-      opacity: 1;
-    }
   }
 }
 

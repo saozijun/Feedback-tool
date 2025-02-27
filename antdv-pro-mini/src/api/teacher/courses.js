@@ -131,3 +131,12 @@ export const revoke = (data) => {
 export const getFeedbacks = (courseId) => {
   return useGet(`/courseFeedback/course/${courseId}`);
 };
+
+/**
+ * 获取课程问卷的填写情况列表
+ * @param {number} data
+ * @returns {Promise}
+ */
+export const FillinDetails = (data) => {
+  return useGet(`/questionnaireResponses/FillinDetails`, data);
+};

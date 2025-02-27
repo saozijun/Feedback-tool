@@ -170,7 +170,5 @@ export default adminRoutes as RouteRecordRaw[]
 
 // 导出获取角色路由的方法
 export const getRoutesByRole = (role: string) => {
-  console.log(role,'role');
-  
   return filterRoutesByRole(adminRoutes, role) as RouteRecordRaw[]
 }

@@ -55,5 +55,12 @@ public class QuestionnaireResponsesController {
         queryWrapper.orderByDesc("id"); //设置id倒序
         return Result.success(questionnaireResponsesService.page(new Page<>(pageNum, pageSize)));
     }
+    // 查询课程问卷的填写情况列表
+    @GetMapping("/FillinDetails")
+    public Result getCourseQuestionnaireResponses(
+            @RequestParam Long courseId,
+            @RequestParam Long questionnaireId) {
+        return Result.success(questionnaireResponsesService.getCourseQuestionnaireResponses(courseId, questionnaireId));
+    }
 }
 

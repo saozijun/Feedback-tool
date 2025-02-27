@@ -2,6 +2,8 @@ package com.cen.service;
 
 import com.cen.entity.QuestionnaireResponses;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cen.controller.dto.QuestionnaireResponseDetailDTO;
+import java.util.List;
 
 /**
  * <p>
@@ -12,5 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2025-02-26
  */
 public interface IQuestionnaireResponsesService extends IService<QuestionnaireResponses> {
-
+    // 获取课程问卷的所有填写记录
+    List<QuestionnaireResponseDetailDTO> getCourseQuestionnaireResponses(Long courseId, Long questionnaireId);
 }

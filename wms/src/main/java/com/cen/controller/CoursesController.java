@@ -8,11 +8,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cen.common.Result;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import com.cen.service.ICoursesService;
 import com.cen.entity.Courses;
 
 import org.springframework.web.bind.annotation.RestController;
+import lombok.Data;
 
 /**
  * <p>
@@ -49,16 +53,65 @@ public class CoursesController {
         return Result.success(coursesService.getById(courses.getId()));
     }
 
-    // 全部课程列表
+    // 全部课程列表(按学年学期分组)
     @GetMapping("/allList")
-    public Result allList(@RequestParam(required = false) Long teacherId){
+    public Result allList(@RequestParam(required = false) Long teacherId) {
         QueryWrapper<Courses> queryWrapper = new QueryWrapper<>();
         if (teacherId != null) {
             queryWrapper.eq("teacher_id", teacherId);
         }
-        queryWrapper.orderByDesc("id"); // 按ID倒序排序
-        return Result.success(coursesService.list(queryWrapper));
+        // 按学年降序、学期升序排序
+        queryWrapper.orderByDesc("academic_year")
+                   .orderByAsc("semester")
+                   .orderByDesc("id");
+        
+        List<Courses> coursesList = coursesService.list(queryWrapper);
+        
+        // 按学年和学期分组，使用自定义比较器实现年份降序
+        Map<String, Map<Integer, List<Courses>>> groupedMap = coursesList.stream()
+                .filter(c -> c.getAcademicYear() != null && c.getSemester() != null)
+                .collect(Collectors.groupingBy(
+                        Courses::getAcademicYear,
+                        () -> new TreeMap<String, Map<Integer, List<Courses>>>((a, b) -> b.compareTo(a)), // 年份降序
+                        Collectors.groupingBy(
+                                Courses::getSemester,
+                                TreeMap::new,
+                                Collectors.toList()
+                        )
+                ));
+
+        // 转换为数组格式
+        List<YearData> resultList = groupedMap.entrySet().stream()
+                .map(yearEntry -> {
+                    YearData yearData = new YearData();
+                    yearData.setYear(yearEntry.getKey());
+                    yearData.setSemesters(yearEntry.getValue().entrySet().stream()
+                            .map(semesterEntry -> {
+                                SemesterData semesterData = new SemesterData();
+                                semesterData.setSemester(semesterEntry.getKey());
+                                semesterData.setCourses(semesterEntry.getValue());
+                                return semesterData;
+                            })
+                            .collect(Collectors.toList()));
+                    return yearData;
+                })
+                .collect(Collectors.toList());
+
+        return Result.success(resultList);
     }
+
+    @Data
+    static class YearData {
+        private String year;
+        private List<SemesterData> semesters;
+    }
+
+    @Data
+    static class SemesterData {
+        private Integer semester;
+        private List<Courses> courses;
+    }
+
     //分页查询
     @GetMapping("/page")
     public Result findPage(@RequestParam(defaultValue = "1") Integer pageNum,
